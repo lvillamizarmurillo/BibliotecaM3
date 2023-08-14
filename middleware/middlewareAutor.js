@@ -1,35 +1,19 @@
+import express from 'express';
 import 'reflect-metadata';
-import {plainToClass, classToPlain} from 'class-transformer';
+import {plainToClass} from 'class-transformer';
+import {Autor} from "../controller/storageAutor.js"
 import {validate} from 'class-validator';
-import { Autor } from "../contrusuario.js";
-import { Router } from "express";
-const appMiddlewareCampusVerify = Router();
-const appDTOData = Router();
 
-
-appMiddlewareCampusVerify.use((req,res,next) => {
-    if(!req.rateLimit) return; 
-    let {payload} = req.data;
-    const { iat, exp, ...newPayload } = payload;
-    payload = newPayload;
-    let Clone = JSON.stringify(classToPlain(plainToClass(User, {}, { ignoreDecorators: true })));
-    let Verify = Clone === JSON.stringify(payload);
-    (!Verify) ? res.status(406).send({status: 406, message: "No Autorizado"}) : next();  
-});
-
-appDTOData.use( async(req,res,next) => {
+const appmiddlewareAutor = express();
+appmiddlewareAutor.use(async(req,res,next)=>{
     try {
-        let data = plainToClass(User, req.body);
+        let data = plainToClass(Autor, req.body, { excludeExtraneousValues: true });
+        req.body = data;
         await validate(data);
-        req.body = JSON.parse(JSON.stringify(data));
-        req.data = undefined;
         next();
     } catch (err) {
-        res.status(err.status).send(err)
+        res.status(err.status).json(err)
     }
-});
+})
 
-export {
-    appMiddlewareCampusVerify,
-    appDTOData
-};
+export default appmiddlewareAutor;
