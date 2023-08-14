@@ -10,9 +10,17 @@ appAutor.get("/", limitGrt(), async(req,res)=>{
     if(!req.rateLimit) return; 
     console.log(req.rateLimit);
     let db = await con();
+
     let autor = db.collection("autor");
     let result = await autor.find({}).toArray();
-    res.send(result);
+    const transformedResult = result.map(item => ({
+        "hola": item._id,
+        "cedula": item.cc,
+        "name": item.nombre,
+        "lastname": item.apellido,
+        "age": item.edad
+    }))
+    res.send(transformedResult);
 });
 
 export default appAutor; 
